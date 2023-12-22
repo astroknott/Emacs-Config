@@ -1,0 +1,807 @@
+#+TITLE: My Emacs Config
+#+AUTHOR: Aaron Knott
+#+DESCRIPTION: My Emacs config.
+#+STARTUP: showeverything
+#+OPTIONS: toc:2
+
+* TABLE OF CONTENTS :toc:
+- [[#package-management][Package Management]]
+  - [[#straightel][Straight.el]]
+- [[#undo-functionality][Undo Functionality]]
+- [[#eshell-config][Eshell config]]
+- [[#ai-integrations][A.I. Integrations]]
+  - [[#gptel][gpt.el]]
+- [[#generalel-setup][General.el Setup]]
+  - [[#helper-functions][Helper functions]]
+  - [[#general-bindings][General Bindings]]
+- [[#completion-and-projectile][Completion and Projectile]]
+- [[#user-interface][User Interface]]
+  - [[#theme][Theme]]
+- [[#keybindings][Keybindings]]
+- [[#selection][Selection]]
+- [[#movement][Movement]]
+  - [[#avy][Avy]]
+  - [[#vim-like-movement-rebinding][Vim-like movement rebinding]]
+  - [[#narrowing][Narrowing]]
+  - [[#frame-management][Frame Management]]
+  - [[#window-management][Window Management]]
+  - [[#register-management][Register Management]]
+- [[#development-environment][Development Environment]]
+  - [[#elisp][Elisp]]
+  - [[#python--javascript--web][Python / Javascript / Web]]
+  - [[#restclient-postman-for-emacs][RESTClient (Postman for Emacs)]]
+  - [[#magit][Magit]]
+- [[#org-mode][Org Mode]]
+  - [[#org-setup][Org Setup]]
+  - [[#roam-setup][Roam Setup]]
+  - [[#auto-archiving][Auto Archiving]]
+  - [[#insert-elisp-structure-template][Insert elisp Structure Template]]
+  - [[#enabling-table-of-contents][Enabling Table of Contents]]
+- [[#dired][Dired]]
+- [[#the-rest][The Rest]]
+- [[#custom-functions][Custom Functions]]
+  - [[#utilities][Utilities]]
+  - [[#projectile-project-action-commands][Projectile Project Action Commands]]
+  - [[#toggle-font-size][Toggle Font Size]]
+- [[#secrets-manager][Secrets manager]]
+
+* Package Management
+   #+begin_src emacs-lisp
+     (toggle-frame-fullscreen)
+
+     (require 'package)
+     (add-to-list 'package-archives
+                  '("melpa-stable" . "https://melpa.org/packages/") t)
+     (package-initialize)
+
+     (unless (package-installed-p 'use-package)
+       (package-refresh-contents)
+       (package-install 'use-package))
+     (eval-when-compile
+       (require 'use-package))
+     (require 'bind-key)
+     (setq use-package-always-ensure t)
+     (package-refresh-contents)
+   #+end_src
+** Straight.el
+#+BEGIN_SRC emacs-lisp
+  ;; (defvar bootstrap-version)
+  ;; (let ((bootstrap-file
+  ;;        (expand-file-name
+  ;;         "straight/repos/straight.el/bootstrap.el"
+  ;;         (or (bound-and-true-p straight-base-dir)
+  ;;             user-emacs-directory)))
+  ;;       (bootstrap-version 7))
+  ;;   (unless (file-exists-p bootstrap-file)
+  ;;     (with-current-buffer
+  ;;         (url-retrieve-synchronously
+  ;;          "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+  ;;          'silent 'inhibit-cookies)
+  ;;       (goto-char (point-max))
+  ;;       (eval-print-last-sexp)))
+  ;;   (load bootstrap-file nil 'nomessage))
+#+END_SRC
+* Undo Functionality
+#+BEGIN_SRC emacs-lisp
+  ;; paired with god-mode gives vim-like undo
+  ;; (general-define-key
+  ;;  "C-u" 'undo)
+#+END_SRC
+* Eshell config
+#+BEGIN_SRC emacs-lisp
+  (use-package eshell
+    :after general
+    :ensure nil
+    :commands (eshell)
+    :init
+    (setq initial-buffer-choice 'eshell)
+    :general
+    ("M-RET" 'eshell)
+    :config
+    (setq eshell-history-size 10000))
+    ;; (setq eshell-rc-script "~/.profile"))
+
+#+END_SRC
+* A.I. Integrations
+** gpt.el
+#+BEGIN_SRC emacs-lisp
+  (use-package gptel
+    :general
+    (ak/main-leader-key
+      "a" '(gptel-menu :wk "Ask A.I."))
+    :config
+    (setq-default gptel-model "gpt-4-1106-preview"))
+
+  (gptel-make-ollama
+   "Ollama"                              
+   :host "localhost:11434"               
+   :models '("codellama:latest")         
+   :stream t)
+
+  (add-to-list 'load-path "./config/repos/gptel-extensions.el")
+  (require 'gptel-extensions)
+#+END_SRC
+
+* General.el Setup
+** Helper functions
+*** Generate jump to file functions
+#+BEGIN_SRC emacs-lisp
+  (defun ak/generate-jump-functions (directory file-list)
+    (dolist (f file-list)
+      (let ((function-name (intern (format "ak/jump-to-%s"
+                                           (file-name-base f))))
+            (full-path (expand-file-name f directory)))
+        (fset function-name
+              `(lambda ()
+                 (interactive)
+                 (find-file ,full-path))))))
+#+END_SRC
+
+** General Bindings
+#+BEGIN_SRC emacs-lisp
+  (use-package general
+    :init
+    (ak/generate-jump-functions
+     "~/Dropbox/emacs/"
+     '("writing.org" "notes.org" "tasks.org" "docs.org" "home.org" "books.org" "business.org"))
+
+    (ak/generate-jump-functions
+     "~/pCloud Drive/emacs/config"
+     '("config.org"))
+    :config
+    (general-auto-unbind-keys)
+    (general-create-definer ak/leader-key
+      :prefix "C-c")
+    (general-create-definer ak/main-leader-key
+      :prefix "M-SPC")
+
+    (ak/main-leader-key
+      "M-o" '(:ignore t :wk "Org files")
+      "M-o t" '(ak/jump-to-tasks :wk "Tasks")
+      "M-o c" '(ak/jump-to-config :wk "Config")
+      "M-o w" '(ak/jump-to-writing :wk "Writing")
+      "M-o d" '(ak/jump-to-docs :wk "Docs")
+      "M-o n" '(ak/jump-to-notes :wk "Notes")
+      "M-o b" '(ak/jump-to-books :wk "Books")
+      "M-o $" '(ak/jump-to-business :wk "Business")
+      "M-o h" '(ak/jump-to-home :wk "Home")))
+
+#+END_SRC
+* Completion and Projectile
+#+begin_src emacs-lisp
+  ;; completion framwork
+  (require 'ido)
+  (ido-mode t)
+
+  (use-package helm
+    :config
+    (helm-mode 1))
+
+  (use-package helm-rg
+    :after helm)
+
+  (use-package helm-swoop
+    :after helm)
+  (use-package helm-projectile
+    :after (helm projectile))
+
+  (use-package projectile)
+#+end_src
+* User Interface 
+   #+begin_src emacs-lisp
+     (tool-bar-mode -1)
+     (scroll-bar-mode -1)
+     (push '(menu-bar-lines . 0) default-frame-alist)
+     (push '(tool-bar-lines . 0) default-frame-alist)
+     (push '(vertical-scroll-bars . 0) default-frame-alist)
+     (setq use-dialog-box nil)
+     (setq use-file-dialog nil)
+       ;;;; set default margins
+     (setq-default fringes-outside-margins nil)
+     (setq-default left-margin-width 0)
+     (setq-default right-margin-width 0)
+     (setq-default left-fringe-width 0)
+     (setq-default right-fringe-width 0)
+
+     (use-package which-key
+       :config
+       (which-key-mode))
+
+     ;; adds global padding on frames/windows
+     (use-package spacious-padding
+       :config
+       (spacious-padding-mode 1))
+   #+end_src
+
+** Theme
+#+BEGIN_SRC emacs-lisp
+  ;; theme
+  (load-theme 'kaolin-mono-light t)
+
+  (use-package modus-themes
+    :ensure t
+    :init
+    (setq modus-operandi-theme-org-blocks 'greyscale)
+    (setq modus-operandi-theme-completions 'opinionated)
+    (setq modus-operandi-theme-fringes 'subtle)
+    (setq modus-operandi-theme-scale-headings t
+          modus-operandi-theme-slanted-constructs t
+          modus-operandi-theme-bold-constructs t
+          modus-operandi-theme-faint-syntax nil
+          modus-operandi-theme-intense-hl-line nil
+          modus-operandi-theme-variable-pitch-headings t
+          modus-operandi-theme-intense-paren-match t
+          modus-operandi-theme-section-headings t)
+
+    (setq modus-operandi-theme-scale-1 1.05
+          modus-operandi-theme-scale-2 1.1
+          modus-operandi-theme-scale-3 1.15
+          modus-operandi-theme-scale-4 1.2
+          modus-operandi-theme-scale-5 1.3)
+
+    (setq modus-operandi-theme-headings
+          '((1 . highlight)
+            (2 . line)
+            (t . rainbow-line-no-bold)))
+
+    (run-at-time "06:00" (* 60 60 24)
+                 (lambda () (enable-theme 'modus-operandi)))
+    :config
+
+    (defadvice load-theme (before theme-dont-propagate activate)
+      "Disable theme before loading new one."
+      (mapc #'disable-theme custom-enabled-themes))
+    (load-theme 'modus-operandi t))
+#+END_SRC
+
+* Keybindings
+   #+begin_src emacs-lisp
+
+     (global-unset-key (kbd "C-c"))
+      (global-set-key (kbd "M-x") 'helm-M-x)
+      (global-set-key (kbd "C-c k") 'ido-kill-buffer)
+      (global-set-key (kbd "C-c l") 'helm-buffers-list)
+      (global-set-key (kbd "C-s") 'helm-swoop)
+      (global-set-key (kbd "C-x C-f") 'helm-find-files)
+      (global-set-key (kbd "M-y") 'helm-show-kill-ring)
+      (global-set-key (kbd "C-x r b") 'helm-bookmarks)
+      (global-set-key (kbd "C-c p p") 'helm-projectile-switch-project)
+      (global-unset-key (kbd "C-<down-mouse-1>"))
+
+      (winner-mode t)
+
+     ;; key chord setup
+     (use-package key-chord
+       :config
+       (key-chord-mode 1)
+       (key-chord-define-global "kk" 'package-list-packages))
+
+    #+end_src     
+
+* Selection
+#+BEGIN_SRC emacs-lisp
+  ;; expand region
+  (use-package expand-region
+    :general
+    ("M-[" 'er/contract-region)
+    ("M-]" 'er/expand-region))
+
+#+END_SRC
+
+* Movement
+** Avy
+#+BEGIN_SRC emacs-lisp
+  ;; movement
+  (use-package avy
+    :general
+    ("C-;" 'avy-goto-char-timer)
+    ("C-:" 'avy-copy-line)
+    ("C-'" 'avy-copy-region)
+    (ak/main-leader-key
+      "v" '(:ignore t :wk "Avy")
+      "vl" '(avy-goto-line :wk "Go to Line")
+      "vm" '(avy-move-region :wk "Move Region")
+      "vc" '(avy-kill-ring-save-region :wk "Copy Region to kill ring")
+      "vk" '(avy-kill-region :wk "Kill Region")))
+
+#+END_SRC
+** Vim-like movement rebinding
+#+BEGIN_SRC emacs-lisp
+  (general-define-key
+   "M-j" 'next-line
+   "M-J" 'next-line
+   "M-k" 'previous-line
+   "M-K" 'previous-line
+   "M-l" 'forward-char
+   "M-L" 'forward-char
+   "M-H" 'backward-char)
+
+#+END_SRC
+** Narrowing
+#+BEGIN_SRC emacs-lisp
+  (ak/main-leader-key
+   "n" '(:ignore t :wk "Narrow")
+   "nw" '(widen :wk "Widen")
+   "ns" '(org-narrow-to-subtree :wk "Org Subtree")
+   "nb" '(org-narrow-to-block :wk "Org Block")
+   "nd" '(narrow-to-defun :wk "Defun")
+   "nr" '(narrow-to-region :wk "Region")
+   "np" '(narrow-to-page :wk "Page")
+   "ne" '(org-narrow-to-element :wk "Org Element"))
+#+END_SRC
+** Frame Management
+#+BEGIN_SRC emacs-lisp
+  (ak/main-leader-key
+    "SPC" '(:ignore t :wk "Frame Management")
+    "SPC n" '(make-frame-command :wk "New Frame")
+    "SPC o" '(other-frame :wk "Move to Other Frame")
+    "SPC l" 'other-frame
+    "SPC h" 'other-frame
+    "SPC k" '(delete-frame :wk "Close Frame"))
+
+#+END_SRC
+** Window Management
+#+BEGIN_SRC emacs-lisp
+      (ak/main-leader-key
+        "h" '(windmove-left :wk "Window jump left")
+        "j" '(windmove-down :wk "Window jump down")
+        "k" '(windmove-up :wk "Window jump up")
+        "l" '(windmove-right :wk "Window jump right")
+        "0" '(delete-window :wk "Delete window")
+        "1" '(delete-other-windows :wk "Delete other windows")
+        "2" '(split-window-below :wk "Vertical split")
+        "3" '(split-window-right :wk "Horizontal split")
+        "o" '(other-window :wk "Window jump other")
+        "/" '(winner-undo :wk "Winner Undo"))
+
+    (use-package ace-window
+      :bind ("M-o" . ace-window)
+      :config
+      (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+      (setq aw-background nil))
+
+#+END_SRC
+** Register Management
+#+BEGIN_SRC emacs-lisp
+  (ak/main-leader-key
+    "r" '(:ignore t :wk "Register Management")
+    "r j" '(jump-to-register :wk "Jump to register")
+    "r s" '(:ignore t :wk "Save Register...")
+    "r s w" '(window-configuration-to-register :wk "Save Windows")
+    "r s p" '(point-to-register :wk "Save Point")
+    "r s f" '(frameset-to-register :wk "Save Frames"))
+#+END_SRC
+
+* Development Environment
+** Elisp
+#+begin_src emacs-lisp
+  ;; rainbow delimiters setup
+  (use-package rainbow-delimiters
+    :hook ((emacs-lisp-mode . rainbow-delimiters-mode)))
+
+#+end_src
+** Python / Javascript / Web
+   #+begin_src elisp
+     (setq-default indent-tabs-mode nil)
+     (use-package pyenv-mode
+       :config
+       (pyenv-mode 1))
+
+     (use-package prettier-js
+       :hook ((js2-mode . prettier-js-mode)
+              (web-mode . prettier-js-mode)))
+
+     (use-package flycheck
+       :after web-mode
+       :config
+       (flycheck-add-mode 'typescript-tslint 'web-mode))
+
+     (use-package tide
+       :hook ((web-mode . my/setup-tide-mode)
+              (before-save-hook . tide-format-before-save)
+              (typescript-mode . my/setup-tide-mode)
+              (js-mode . my/setup-tide-mode)
+              (rjsx-mode . my/setup-tide-mode)))
+
+     (defun my/setup-tide-mode ()
+       (interactive)
+       (tide-setup)
+       (flycheck-mode +1)
+       (setq flycheck-check-syntax-automatically '(save mode-enabled))
+       (eldoc-mode +1)
+       (tide-hl-identifier-mode +1)
+       (company-mode +1))
+
+     (use-package add-node-modules-path
+       :after (js-mode web-mode)
+       :hook ((js-mode . add-node-modules-path)
+              (web-mode . add-node-modules-path)))
+
+     ;; web mode stuff
+     (use-package web-mode
+       :hook (((lambda ()
+                 (when (string-equal "tsx" (file-name-extension buffer-file-name))
+                   (my/setup-tide-mode))) . web-mode))
+       :mode
+       ("\\.ejs\\'" "\\.hbs\\'" "\\.html\\'" "\\.php\\'" "\\.[jt]sx?\\'" "\\.vue\\'")
+       :config
+       (setq web-mode-enable-current-element-highlight t)
+       (setq web-mode-enable-current-column-highlight t)
+       (setq web-mode-content-types-alist '(("jsx" . "\\.[jt]sx?\\'"))))
+
+   #+end_src
+** RESTClient (Postman for Emacs)
+#+BEGIN_SRC emacs-lisp
+ (use-package restclient)
+#+END_SRC
+
+** Magit
+#+BEGIN_SRC emacs-lisp
+  (use-package magit)
+
+  (use-package forge
+    :after magit)
+
+  (use-package orgit
+    :after magit)
+
+  (use-package orgit-forge
+    :after (magit forge orgit))
+
+  (with-eval-after-load 'magit
+    (fset 'forge--list-notifications-all
+          (symbol-function 'forge--list-notifications-unread)))
+
+#+END_SRC
+*** General Bindings - Magit
+#+BEGIN_SRC emacs-lisp
+
+  ;; on notifications view, change the specific visit pullreq command to the more general visit topic command, so that it can visit issues as well
+  (ak/main-leader-key
+    :keymaps 'magit-mode-map
+    "F" '(:ignore t :wk "Forge")
+    "Fm" '(forge-merge :wk "Merge PR")
+    :keymaps 'forge-pullreq-section-map
+    "Ft" '(forge-visit-topic :wk "Visit Topic")
+    "Fi" '(forge-visit-issue :wk "Visit Issue")
+    "Fp" '(forge-visit-pullreq :wk "Visit Pull Request"))
+
+  (general-define-key
+   :keymaps 'forge-notifications-mode-map 
+   "RET" 'forge-visit-topic)
+#+END_SRC
+
+* Org Mode
+** Org Setup
+#+BEGIN_SRC emacs-lisp
+  (use-package org
+    :hook (text-mode . turn-on-visual-line-mode)
+    :general
+    (org-mode-map
+     "M-p" 'org-previous-visible-heading
+     "M-n" 'org-next-visible-heading)
+    (global
+     "M-c" 'org-capture
+     "C-c a" 'org-agenda)
+    :config
+    (setq org-refile-use-outline-path 'file
+          org-outline-path-complete-in-steps t
+          org-log-done t
+          org-agenda-files '("~/Dropbox/emacs/tasks.org")
+          org-archive-location "archive/%s_archive::datetree/"
+          org-capture-templates
+          '(("e" "Emacs Todo" entry
+             (file+headline "~/Dropbox/emacs/tasks.org" "Emacs")
+             "* TODO %?")
+            ("m" "Masa Todo" entry
+             (file+headline "~/Dropbox/emacs/tasks.org" "Masa")
+             "* TODO %? %^{PRIORITY}p")
+            ("i" "Business Idea" entry
+             (file "~/Dropbox/emacs/business.org"))
+            ("w" "Writing Idea" entry
+             (file "~/Dropbox/emacs/writing.org")
+             "* %? %^g")
+            ("b" "Book" entry
+             (file "~/Dropbox/emacs/books.org"))))
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     '((python . t)
+       (emacs-lisp . t))))
+
+  (use-package org-superstar
+    :after org
+    :hook (org-mode . org-superstar-mode))
+
+  (use-package org-autolist
+    :after org
+    :hook (org-mode . org-autolist-mode))
+
+#+END_SRC
+** Roam Setup
+#+BEGIN_SRC emacs-lisp
+  (use-package org-roam
+    :init
+    (setq org-roam-v2-ack t)
+    :custom
+    (org-roam-directory "~/Documents/RoamNotes")
+    (org-roam-completion-everywhere t)
+    :bind (("C-c n l" . org-roam-buffer-toggle)
+           ("C-c n f" . org-roam-node-find)
+           ("C-c n i" . org-roam-node-insert)
+           :map org-mode-map
+           ("C-M-i" . completion-at-point)
+           :map org-roam-dailies-map
+           ("Y" . org-roam-dailies-capture-yesterday)
+           ("T" . org-roam-dailies-capture-tomorrow))
+    :general
+    (ak/main-leader-key
+      "f" '(:keymap org-roam-dailies-map :wk "File Daily Notes"))
+    :config
+    (require 'org-roam-dailies) ;; Ensure the keymap is available
+    (org-roam-db-autosync-mode))
+#+END_SRC
+** Auto Archiving
+#+begin_src emacs-lisp
+  ;; allows org refile to create new nodes for refiling
+  (setq org-refile-allow-creating-parent-nodes t)
+
+  ;; matches yyyy-mm-dd.org pattern
+  (setq daily-note-pattern "\\([0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}\\).org$")
+
+  (defun ak/org-archive-done-tasks ()
+    (when (eq major-mode 'org-mode)
+      (interactive)
+      (unless (string-match-p ".org_archive$" (buffer-file-name))
+        (org-map-entries
+         (lambda ()
+           (if (string-match-p daily-note-pattern (buffer-file-name))
+               ;; for daily notes, move to a "Archive" subtree in the same file
+               (progn
+                 (funcall 'org-todo "")
+                 (funcall 'org-archive-to-archive-sibling))
+             ;; for other files, archive to a separate file
+             (org-archive-subtree))
+           (setq org-map-continue-from (outline-previous-heading)))
+         "/+DONE" 'file)
+        (save-buffer))))
+
+  (add-hook 'after-save-hook 'ak/org-archive-done-tasks)
+
+  (defun ak/refile-tomorrow-tasks ()
+    "Refile all tasks with the TODO keyword of TOMORROW or BACKLOG to the next day's daily note."
+    (when (eq major-mode 'org-mode)
+      (interactive)
+      (org-map-entries
+       (lambda ()
+         (when (or (string= (org-get-todo-state) "TOMORROW"))
+           (let* ((today (current-time))
+                  (tomorrow (time-add today (days-to-time 1)))
+                  (next-day (format-time-string "%Y-%m-%d" tomorrow))
+                  (target-file (concat org-roam-directory "/daily/" next-day ".org"))
+                  (target-node (org-roam-node-create :file target-file)))
+             (progn                      
+               (funcall 'org-todo "TODO")
+               (funcall 'org-refile nil nil (list "Tasks" target-file nil nil target-node)))
+             (setq org-map-continue-from (outline-previous-heading))
+             nil)))
+       "/+TODO=\"TOMORROW\"")
+      (save-buffer)))
+
+  (add-hook 'org-after-refile-insert-hook 'save-buffer)
+  (add-hook 'after-save-hook 'ak/refile-tomorrow-tasks)
+
+
+#+end_src
+** Insert elisp Structure Template
+#+begin_src emacs-lisp
+  (defun my-org-insert-elisp-block ()
+    (interactive)
+    (insert "#+BEGIN_SRC emacs-lisp\n\n#+END_SRC")
+    (previous-line 1))
+
+  (define-key org-mode-map (kbd "C-c e") 'my-org-insert-elisp-block)
+
+#+end_src
+
+** Enabling Table of Contents
+#+BEGIN_SRC emacs-lisp
+(use-package toc-org
+    :commands toc-org-enable
+    :init (add-hook 'org-mode-hook 'toc-org-enable))
+#+END_SRC
+
+* Dired
+#+BEGIN_SRC emacs-lisp
+  (use-package dired
+    :ensure nil
+    :general
+    (dired-mode-map
+     "F" 'dired-create-empty-file))
+
+  (use-package diredc
+    :after dired
+    :hook (dired-mode . dired-omit-mode)
+    :config
+    (setq dired-omit-files "^.*~\\|^#.*#$"))
+#+END_SRC
+
+* The Rest  
+ #+begin_src emacs-lisp
+   (set-variable (quote scheme-program-name) "~/mit-scheme-11.2/")
+
+   ;; removes file-lock mechanism -- useful when having issues with hotreload/webpack
+   (setq create-lockfiles nil)
+
+   (use-package all-the-icons)
+   (defalias 'yes-or-no-p 'y-or-n-p)
+
+   (projectile-global-mode)
+
+   (subword-mode t)
+
+   ;; shell customizations
+   (setq comint-scroll-to-bottom-on-input t)
+   (setq comint-scroll-to-bottom-on-output t)
+
+   (helm-projectile-on)
+
+   (use-package smartparens
+     :config
+     (show-smartparens-global-mode)
+     (smartparens-global-mode 1))
+
+   (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action)
+
+   ;; ;; Company
+   (use-package company
+     :hook (org-mode . company-mode)
+     :bind (:map company-active-map
+                 ("<tab>" . company-complete-selection))
+     :custom
+     (setq company-backends '((company-capf company-tide company-files company-yasnippet company-keywords)))
+     (setq company-show-quick-access 'right)
+     (setq company-tooltip-align-annotations t)
+     (company-minimum-prefix-length 1)
+     (company-idle-delay 0.0))
+
+   (global-company-mode 1)
+
+   (put 'dired-find-alternate-file 'disabled nil)
+
+   (use-package yasnippet
+     :config
+     (yas-global-mode t))
+ #+end_src
+* Custom Functions
+** Utilities
+*** Get directories recursively
+#+begin_src emacs-lisp
+  (defun directories-recursively (dirs)
+    "Get a list of all directories under DIRS recursively."
+    (apply #'append
+           (mapcar (lambda (dir)
+                     (directory-files-recursively dir ".*" t))
+                   dirs)))
+#+end_src
+** Projectile Project Action Commands
+*** Projectile Action Function
+#+begin_src emacs-lisp
+  ;; this is the general function that the following commands will all share
+  ;; includes kill-line functionality similar to helm-swoop and helm-rg
+
+  (defun my-projectile-action (prompt action &optional pfx input)
+    (if pfx
+      (let ((my-kill-line
+             (lambda ()
+               (interactive)
+               (if (eolp)
+                   (kill-line 0)
+                 (kill-line)))))
+        (let* ((all-projects (projectile-relevant-known-projects))
+               (masa-projects (seq-filter (lambda (proj) (string-match-p "~/Projects/masa-" proj)) all-projects))
+               (projects (cons "--current-project--" masa-projects))
+               (project (completing-read prompt projects))
+               (default-directory (if (and project (not (string= project "")) (not (string= project "--current-project--")))
+                                      project
+                                    default-directory)))
+          (minibuffer-with-setup-hook
+              (lambda ()
+                (local-set-key (kbd "C-k") my-kill-line))
+            (funcall action input))))
+      (funcall action input)))
+
+
+#+end_src
+*** Define Custom Function
+#+begin_src emacs-lisp
+  ;; this will be used to setup custom functions programatically later
+  (defun my-define-custom-function (name prompt action keybinding requires-input)
+    (let ((custom-fn-name (intern (concat "my-" name))))
+      (defalias custom-fn-name
+        (if requires-input
+            `(lambda (pfx)
+               (interactive "P")
+               (let ((input (read-string ,prompt)))
+                 (my-projectile-action ,prompt ',action pfx input)))
+          `(lambda (pfx)
+             (interactive "P")
+             (my-projectile-action ,prompt ',action pfx))))
+      (global-set-key (kbd keybinding) custom-fn-name)))
+
+#+end_src
+*** Projectile Actions
+#+begin_src emacs-lisp
+(defun my-setup-custom-functions ()
+  ;; find file
+  (my-define-custom-function "helm-projectile-find-file" "Find file in project: " 'helm-projectile-find-file "C-c f" nil)
+  ;; rg
+  (my-define-custom-function "helm-rg" "Search project: " (lambda (pattern) (helm-rg pattern)) "C-M-k" t)
+  ;; open shell
+  (my-define-custom-function "projectile-run-shell" "Run shell in project: " 'projectile-run-shell "C-c s" nil)
+  ;; magit status
+  (my-define-custom-function "magit-status" "Show status of project: " 'magit-status "M-SPC g" nil)
+  ;; Add more custom functions here
+)
+
+(require 'magit)
+(require 'projectile)
+(require 'helm)
+(my-setup-custom-functions)
+
+
+
+#+end_src
+
+** Toggle Font Size
+*** Set font variables
+#+begin_src emacs-lisp
+  (defvar ak/default-font-size 15
+    "Default font size.")
+
+  (defvar ak/larger-font-size 17
+    "Larger font size for docked mode.")
+
+  (defvar ak/current-font-size ak/default-font-size
+    "Current font size. Should be one of `my-default-font-size` or `my-larger-font-size`.")
+#+end_src
+*** Reset Text Scale Adjustments
+#+begin_src emacs-lisp
+  (defun ak/reset-text-scale ()
+    "Reset the text scale in all buffers."
+    (dolist (buf (buffer-list))
+      (with-current-buffer buf
+        (text-scale-set 0))))
+
+#+end_src
+*** Set Font Size
+#+begin_src emacs-lisp
+  (defun ak/set-font-size (size)
+    "Set the font size to SIZE for all frames."
+    (set-face-attribute 'default nil :height (* size 10))
+    (setq ak/current-font-size size))
+#+end_src
+*** Toggle Function
+#+begin_src emacs-lisp
+  (defun ak/toggle-font-size ()
+    "Toggle between default and larger font size, and reset text scale in all buffers."
+    (interactive)
+    (if (= ak/current-font-size ak/default-font-size)
+        (ak/set-font-size ak/larger-font-size)
+      (ak/set-font-size ak/default-font-size))
+    (ak/reset-text-scale))
+
+  (ak/set-font-size ak/default-font-size)
+
+#+end_src
+*** Keybindings
+#+begin_src emacs-lisp
+  (general-define-key
+   "C-=" 'text-scale-increase
+   "C--" 'text-scale-decrease)
+  (ak/main-leader-key
+    "cf" '(ak/toggle-font-size :wk "Toggle Font"))
+#+end_src
+* Secrets manager
+#+BEGIN_SRC emacs-lisp
+(setq auth-sources '("~/.authinfo"))
+#+END_SRC
