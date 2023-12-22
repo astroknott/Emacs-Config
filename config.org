@@ -6,14 +6,12 @@
 
 * TABLE OF CONTENTS :toc:
 - [[#package-management][Package Management]]
-  - [[#straightel][Straight.el]]
-- [[#undo-functionality][Undo Functionality]]
+- [[#generalel][General.el]]
 - [[#eshell-config][Eshell config]]
 - [[#ai-integrations][A.I. Integrations]]
   - [[#gptel][gpt.el]]
-- [[#generalel-setup][General.el Setup]]
+- [[#file-shortcuts][File Shortcuts]]
   - [[#helper-functions][Helper functions]]
-  - [[#general-bindings][General Bindings]]
 - [[#completion-and-projectile][Completion and Projectile]]
 - [[#user-interface][User Interface]]
   - [[#theme][Theme]]
@@ -63,29 +61,15 @@
      (setq use-package-always-ensure t)
      (package-refresh-contents)
    #+end_src
-** Straight.el
+* General.el
 #+BEGIN_SRC emacs-lisp
-  ;; (defvar bootstrap-version)
-  ;; (let ((bootstrap-file
-  ;;        (expand-file-name
-  ;;         "straight/repos/straight.el/bootstrap.el"
-  ;;         (or (bound-and-true-p straight-base-dir)
-  ;;             user-emacs-directory)))
-  ;;       (bootstrap-version 7))
-  ;;   (unless (file-exists-p bootstrap-file)
-  ;;     (with-current-buffer
-  ;;         (url-retrieve-synchronously
-  ;;          "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-  ;;          'silent 'inhibit-cookies)
-  ;;       (goto-char (point-max))
-  ;;       (eval-print-last-sexp)))
-  ;;   (load bootstrap-file nil 'nomessage))
-#+END_SRC
-* Undo Functionality
-#+BEGIN_SRC emacs-lisp
-  ;; paired with god-mode gives vim-like undo
-  ;; (general-define-key
-  ;;  "C-u" 'undo)
+  (use-package general
+    :config
+    (general-auto-unbind-keys)
+    (general-create-definer ak/leader-key
+      :prefix "C-c")
+    (general-create-definer ak/main-leader-key
+      :prefix "M-SPC"))
 #+END_SRC
 * Eshell config
 #+BEGIN_SRC emacs-lisp
@@ -106,6 +90,7 @@
 ** gpt.el
 #+BEGIN_SRC emacs-lisp
   (use-package gptel
+    :after general
     :general
     (ak/main-leader-key
       "a" '(gptel-menu :wk "Ask A.I."))
@@ -118,11 +103,11 @@
    :models '("codellama:latest")         
    :stream t)
 
-  (add-to-list 'load-path "./config/repos/gptel-extensions.el")
+  (add-to-list 'load-path "~/vanilla-emacs/config/repos/gptel-extensions.el")
   (require 'gptel-extensions)
 #+END_SRC
 
-* General.el Setup
+* File Shortcuts
 ** Helper functions
 *** Generate jump to file functions
 #+BEGIN_SRC emacs-lisp
@@ -136,37 +121,28 @@
                  (interactive)
                  (find-file ,full-path))))))
 #+END_SRC
-
-** General Bindings
+*** Setup file shortcuts
 #+BEGIN_SRC emacs-lisp
-  (use-package general
-    :init
-    (ak/generate-jump-functions
-     "~/Dropbox/emacs/"
-     '("writing.org" "notes.org" "tasks.org" "docs.org" "home.org" "books.org" "business.org"))
+  (ak/generate-jump-functions
+   "~/Dropbox/emacs/"
+   '("writing.org" "notes.org" "tasks.org" "docs.org" "home.org" "books.org" "business.org"))
 
-    (ak/generate-jump-functions
-     "~/pCloud Drive/emacs/config"
-     '("config.org"))
-    :config
-    (general-auto-unbind-keys)
-    (general-create-definer ak/leader-key
-      :prefix "C-c")
-    (general-create-definer ak/main-leader-key
-      :prefix "M-SPC")
+  (ak/generate-jump-functions
+   "~/vanilla-emacs/config"
+   '("config.org"))
 
-    (ak/main-leader-key
-      "M-o" '(:ignore t :wk "Org files")
-      "M-o t" '(ak/jump-to-tasks :wk "Tasks")
-      "M-o c" '(ak/jump-to-config :wk "Config")
-      "M-o w" '(ak/jump-to-writing :wk "Writing")
-      "M-o d" '(ak/jump-to-docs :wk "Docs")
-      "M-o n" '(ak/jump-to-notes :wk "Notes")
-      "M-o b" '(ak/jump-to-books :wk "Books")
-      "M-o $" '(ak/jump-to-business :wk "Business")
-      "M-o h" '(ak/jump-to-home :wk "Home")))
-
+  (ak/main-leader-key
+    "M-o" '(:ignore t :wk "Org files")
+    "M-o t" '(ak/jump-to-tasks :wk "Tasks")
+    "M-o c" '(ak/jump-to-config :wk "Config")
+    "M-o w" '(ak/jump-to-writing :wk "Writing")
+    "M-o d" '(ak/jump-to-docs :wk "Docs")
+    "M-o n" '(ak/jump-to-notes :wk "Notes")
+    "M-o b" '(ak/jump-to-books :wk "Books")
+    "M-o $" '(ak/jump-to-business :wk "Business")
+    "M-o h" '(ak/jump-to-home :wk "Home"))
 #+END_SRC
+
 * Completion and Projectile
 #+begin_src emacs-lisp
   ;; completion framwork
