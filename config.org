@@ -27,11 +27,12 @@
 - [[#development-environment][Development Environment]]
   - [[#elisp][Elisp]]
   - [[#python--javascript--web][Python / Javascript / Web]]
+  - [[#php][PHP]]
   - [[#restclient-postman-for-emacs][RESTClient (Postman for Emacs)]]
   - [[#magit][Magit]]
 - [[#org-mode][Org Mode]]
   - [[#org-setup][Org Setup]]
-  - [[#roam-setup][Roam Setup]]
+  - [[#daily-notes---roam-setup][Daily Notes - Roam Setup]]
   - [[#auto-archiving][Auto Archiving]]
   - [[#insert-elisp-structure-template][Insert elisp Structure Template]]
   - [[#enabling-table-of-contents][Enabling Table of Contents]]
@@ -406,6 +407,10 @@
        (setq web-mode-content-types-alist '(("jsx" . "\\.[jt]sx?\\'"))))
 
    #+end_src
+** PHP
+#+BEGIN_SRC emacs-lisp
+  (use-package php-mode)
+#+END_SRC
 ** RESTClient (Postman for Emacs)
 #+BEGIN_SRC emacs-lisp
  (use-package restclient)
@@ -447,53 +452,56 @@
    "RET" 'forge-visit-topic)
 #+END_SRC
 
+#+END_SRC
 * Org Mode
 ** Org Setup
 #+BEGIN_SRC emacs-lisp
-  (use-package org
-    :hook (text-mode . turn-on-visual-line-mode)
-    :general
-    (org-mode-map
-     "M-p" 'org-previous-visible-heading
-     "M-n" 'org-next-visible-heading)
-    (global
-     "M-c" 'org-capture
-     "C-c a" 'org-agenda)
-    :config
-    (setq org-refile-use-outline-path 'file
-          org-outline-path-complete-in-steps t
-          org-log-done t
-          org-agenda-files '("~/Dropbox/emacs/tasks.org")
-          org-archive-location "archive/%s_archive::datetree/"
-          org-capture-templates
-          '(("e" "Emacs Todo" entry
-             (file+headline "~/Dropbox/emacs/tasks.org" "Emacs")
-             "* TODO %?")
-            ("m" "Masa Todo" entry
-             (file+headline "~/Dropbox/emacs/tasks.org" "Masa")
-             "* TODO %? %^{PRIORITY}p")
-            ("i" "Business Idea" entry
-             (file "~/Dropbox/emacs/business.org"))
-            ("w" "Writing Idea" entry
-             (file "~/Dropbox/emacs/writing.org")
-             "* %? %^g")
-            ("b" "Book" entry
-             (file "~/Dropbox/emacs/books.org"))))
-    (org-babel-do-load-languages
-     'org-babel-load-languages
-     '((python . t)
-       (emacs-lisp . t))))
+      (use-package org
+        :hook (text-mode . turn-on-visual-line-mode)
+        :general
+        (org-mode-map
+         "M-p" 'org-previous-visible-heading
+         "M-n" 'org-next-visible-heading)
+        (global
+         "M-c" 'org-capture
+         "C-c a" 'org-agenda)
+        :config
+        (setq org-refile-use-outline-path 'file
+              org-outline-path-complete-in-steps t
+              org-log-done t
+              org-agenda-files '("~/Dropbox/emacs/tasks.org")
+              org-archive-location "archive/%s_archive::datetree/"
+              org-capture-templates
+              '(("e" "Emacs Todo" entry
+                 (file+headline "~/Dropbox/emacs/tasks.org" "Emacs")
+                 "* TODO %?")
+                ("m" "Masa Todo" entry
+                 (file+headline "~/Dropbox/emacs/tasks.org" "Masa")
+                 "* TODO %? %^{PRIORITY}p")
+                ("i" "Business Idea" entry
+                 (file "~/Dropbox/emacs/business.org"))
+                ("w" "Writing Idea" entry
+                 (file "~/Dropbox/emacs/writing.org")
+                 "* %? %^g")
+                ("b" "Book" entry
+                 (file "~/Dropbox/emacs/books.org"))))
+        (org-babel-do-load-languages
+         'org-babel-load-languages
+         '((python . t)
+           (emacs-lisp . t)))
+        (setq org-goto-interface 'outline-path-completion)
+        (setq org-outline-path-complete-in-steps nil))
 
-  (use-package org-superstar
-    :after org
-    :hook (org-mode . org-superstar-mode))
+      (use-package org-superstar
+        :after org
+        :hook (org-mode . org-superstar-mode))
 
-  (use-package org-autolist
-    :after org
-    :hook (org-mode . org-autolist-mode))
+      (use-package org-autolist
+        :after org
+        :hook (org-mode . org-autolist-mode))
 
 #+END_SRC
-** Roam Setup
+** Daily Notes - Roam Setup
 #+BEGIN_SRC emacs-lisp
   (use-package org-roam
     :init
@@ -514,6 +522,11 @@
       "f" '(:keymap org-roam-dailies-map :wk "File Daily Notes"))
     :config
     (require 'org-roam-dailies) ;; Ensure the keymap is available
+    (setq org-roam-dailies-capture-templates
+          '(("d" "default" entry
+             "* %?"
+             :target (file+head "%<%Y-%m-%d>.org"
+                                "#+title: %<%Y-%m-%d>\n#+SEQ_TODO: TODO(t) WAITING(w) IN_PROGRESS(i) TOMORROW(m) | DONE(d) BACKLOGGED(b)"))))
     (org-roam-db-autosync-mode))
 #+END_SRC
 ** Auto Archiving
@@ -630,7 +643,6 @@
 
    ;; ;; Company
    (use-package company
-     :hook (org-mode . company-mode)
      :bind (:map company-active-map
                  ("<tab>" . company-complete-selection))
      :custom
