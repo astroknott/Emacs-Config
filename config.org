@@ -125,8 +125,12 @@
 *** Setup file shortcuts
 #+BEGIN_SRC emacs-lisp
   (ak/generate-jump-functions
-   "~/Dropbox/emacs/"
-   '("writing.org" "notes.org" "tasks.org" "docs.org" "home.org" "books.org" "business.org"))
+   "~/pCloud Drive/_areas/aaron-work/emacs"
+   '("writing.org" "notes.org" "tasks.org" "docs.org" "home.org" "books.org"))
+
+  (ak/generate-jump-functions
+   "~/pCloud Drive/_areas/aaron-work/emacs/project-notes"
+   '("vidshots.org" "ideas-expressed.org" "goclub.org"))
 
   (ak/generate-jump-functions
    "~/vanilla-emacs/config"
@@ -140,8 +144,11 @@
     "M-o d" '(ak/jump-to-docs :wk "Docs")
     "M-o n" '(ak/jump-to-notes :wk "Notes")
     "M-o b" '(ak/jump-to-books :wk "Books")
-    "M-o $" '(ak/jump-to-business :wk "Business")
-    "M-o h" '(ak/jump-to-home :wk "Home"))
+    "M-o h" '(ak/jump-to-home :wk "Home")
+    "M-o p" '(:ignore t :wk "Projects")
+    "M-o pi" '(ak/jump-to-ideas-expressed :wk "Ideas Expressed")
+    "M-o pb" '(ak/jump-to-vidshots :wk "Bookbrush")
+    "M-o pg" '(ak/jump-to-goclub :wk "Go Club"))
 #+END_SRC
 
 * Completion and Projectile
@@ -469,22 +476,20 @@
         (setq org-refile-use-outline-path 'file
               org-outline-path-complete-in-steps t
               org-log-done t
-              org-agenda-files '("~/Dropbox/emacs/tasks.org")
+              org-agenda-files '("~/pCloud Drive/_areas/aaron-work/emacs/tasks.org")
               org-archive-location "archive/%s_archive::datetree/"
               org-capture-templates
               '(("e" "Emacs Todo" entry
-                 (file+headline "~/Dropbox/emacs/tasks.org" "Emacs")
+                 (file+headline "~/pCloud Drive/_areas/aaron-work/emacs/tasks.org" "Emacs")
                  "* TODO %?")
                 ("m" "Masa Todo" entry
-                 (file+headline "~/Dropbox/emacs/tasks.org" "Masa")
+                 (file+headline "~/pCloud Drive/_areas/aaron-work/emacs/tasks.org" "Masa")
                  "* TODO %? %^{PRIORITY}p")
-                ("i" "Business Idea" entry
-                 (file "~/Dropbox/emacs/business.org"))
                 ("w" "Writing Idea" entry
-                 (file "~/Dropbox/emacs/writing.org")
+                 (file "~/pCloud Drive/_areas/aaron-work/emacs/writing.org")
                  "* %? %^g")
                 ("b" "Book" entry
-                 (file "~/Dropbox/emacs/books.org"))))
+                 (file "~/pCloud Drive/_areas/aaron-work/emacs/books.org"))))
         (org-babel-do-load-languages
          'org-babel-load-languages
          '((python . t)
