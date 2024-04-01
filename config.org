@@ -604,14 +604,20 @@
   (use-package dired
     :ensure nil
     :general
-    (dired-mode-map
-     "F" 'dired-create-empty-file))
+    (:keymaps 'dired-mode-map
+              "F" 'dired-create-empty-file
+              "M-p" 'dired-up-directory
+              "M-n" 'dired-find-file
+              ))
 
   (use-package diredc
     :after dired
     :hook (dired-mode . dired-omit-mode)
     :config
     (setq dired-omit-files "^.*~\\|^#.*#$"))
+
+  dired-up-directory
+  dired-find-file
 #+END_SRC
 
 * The Rest  
