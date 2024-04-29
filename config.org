@@ -10,6 +10,7 @@
 - [[#eshell-config][Eshell config]]
 - [[#ai-integrations][A.I. Integrations]]
   - [[#gptel][gpt.el]]
+  - [[#org-ai][org-ai]]
 - [[#file-shortcuts][File Shortcuts]]
   - [[#helper-functions][Helper functions]]
 - [[#completion-and-projectile][Completion and Projectile]]
@@ -96,7 +97,7 @@
     (ak/main-leader-key
       "a" '(gptel-menu :wk "Ask A.I."))
     :config
-    (setq-default gptel-model "gpt-4-1106-preview"))
+    (setq-default gptel-model "gpt-4-0125-preview"))
 
   (gptel-make-ollama
    "Ollama"                              
@@ -106,6 +107,18 @@
 
   (add-to-list 'load-path "~/vanilla-emacs/config/repos/gptel-extensions.el")
   (require 'gptel-extensions)
+#+END_SRC
+** org-ai
+#+BEGIN_SRC emacs-lisp
+(use-package org-ai
+  :ensure t
+  :commands (org-ai-mode
+             org-ai-global-mode)
+  :init
+  (add-hook 'org-mode-hook #'org-ai-mode) ; enable org-ai in org-mode
+  (org-ai-global-mode) ; installs global keybindings on C-c M-a
+  :config
+  (setq org-ai-default-chat-model "gpt-4-0125-preview"))
 #+END_SRC
 
 * File Shortcuts
@@ -130,7 +143,7 @@
 
   (ak/generate-jump-functions
    "~/pCloud Drive/_areas/aaron-work/emacs/project-notes"
-   '("vidshots.org" "ideas-expressed.org" "goclub.org"))
+   '("bookbrush.org" "trademarkia.org" "goclub.org" "seniornicity.org"))
 
   (ak/generate-jump-functions
    "~/vanilla-emacs/config"
@@ -146,8 +159,9 @@
     "M-o b" '(ak/jump-to-books :wk "Books")
     "M-o h" '(ak/jump-to-home :wk "Home")
     "M-o p" '(:ignore t :wk "Projects")
-    "M-o pi" '(ak/jump-to-ideas-expressed :wk "Ideas Expressed")
-    "M-o pb" '(ak/jump-to-vidshots :wk "Bookbrush")
+    "M-o pt" '(ak/jump-to-trademarkia :wk "Trademarkia")
+    "M-o ps" '(ak/jump-to-trademarkia :wk "Trademarkia")
+    "M-o pb" '(ak/jump-to-bookbrush :wk "Bookbrush")
     "M-o pg" '(ak/jump-to-goclub :wk "Go Club"))
 #+END_SRC
 
@@ -476,7 +490,7 @@
         (setq org-refile-use-outline-path 'file
               org-outline-path-complete-in-steps t
               org-log-done t
-              org-agenda-files '("~/pCloud Drive/_areas/aaron-work/emacs/tasks.org")
+              org-agenda-files '("~/pCloud Drive/_areas/aaron-work/emacs/project-notes")
               org-archive-location "archive/%s_archive::datetree/"
               org-capture-templates
               '(("e" "Emacs Todo" entry
@@ -620,9 +634,6 @@
     :hook (dired-mode . dired-omit-mode)
     :config
     (setq dired-omit-files "^.*~\\|^#.*#$"))
-
-  dired-up-directory
-  dired-find-file
 #+END_SRC
 
 * The Rest  

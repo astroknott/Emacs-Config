@@ -9,6 +9,7 @@
    ["#ece3cc" "#d2212d" "#489100" "#ad8900" "#0072d4" "#ca4898" "#009c8f" "#fbf3db"])
  '(avy-timeout-seconds 0.2)
  '(compilation-message-face 'default)
+ '(css-indent-offset 2)
  '(cua-global-mark-cursor-color "#2aa198")
  '(cua-normal-cursor-color "#657b83")
  '(cua-overwrite-cursor-color "#b58900")
@@ -54,7 +55,8 @@
    '("#CC9393" "#DFAF8F" "#F0DFAF" "#7F9F7F" "#BFEBBF" "#93E0E3" "#94BFF3" "#DC8CC3"))
  '(objed-cursor-color "#ff5555")
  '(org-agenda-clockreport-parameter-plist '(:link t :maxlevel 4 :tstart t :tend t))
- '(org-agenda-files '("~/Dropbox/emacs/tasks.org"))
+ '(org-agenda-files
+   '("~/pCloud Drive/_areas/aaron-work/emacs/project-notes/rge.org" "/Users/aaron/Documents/RoamNotes/daily/2024-04-24.org" "/Users/aaron/pCloud Drive/_areas/aaron-work/emacs/project-notes/seniornicity.org"))
  '(org-agenda-loop-over-headlines-in-active-region nil)
  '(org-agenda-start-with-clockreport-mode t)
  '(org-clock-clocktable-default-properties '(:maxlevel 3))
