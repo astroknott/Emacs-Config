@@ -160,7 +160,7 @@
     "M-o h" '(ak/jump-to-home :wk "Home")
     "M-o p" '(:ignore t :wk "Projects")
     "M-o pt" '(ak/jump-to-trademarkia :wk "Trademarkia")
-    "M-o ps" '(ak/jump-to-trademarkia :wk "Trademarkia")
+    "M-o ps" '(ak/jump-to-seniornicity :wk "Seniornicity")
     "M-o pb" '(ak/jump-to-bookbrush :wk "Bookbrush")
     "M-o pg" '(ak/jump-to-goclub :wk "Go Club"))
 #+END_SRC
