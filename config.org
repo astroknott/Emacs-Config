@@ -138,7 +138,7 @@
 *** Setup file shortcuts
 #+BEGIN_SRC emacs-lisp
   (ak/generate-jump-functions
-   "~/pCloud Drive/_areas/aaron-work/emacs"
+   "~/pCloud Drive/_areas/aaron-work/emacs/org"
    '("writing.org" "notes.org" "tasks.org" "docs.org" "home.org" "books.org"))
 
   (ak/generate-jump-functions
@@ -490,20 +490,17 @@
         (setq org-refile-use-outline-path 'file
               org-outline-path-complete-in-steps t
               org-log-done t
-              org-agenda-files '("~/pCloud Drive/_areas/aaron-work/emacs/project-notes")
+              org-agenda-files '("~/pCloud Drive/_areas/aaron-work/emacs/project-notes" "~/pCloud Drive/_areas/aaron-work/emacs/project-notes/archive")
               org-archive-location "archive/%s_archive::datetree/"
               org-capture-templates
               '(("e" "Emacs Todo" entry
-                 (file+headline "~/pCloud Drive/_areas/aaron-work/emacs/tasks.org" "Emacs")
+                 (file+headline "~/pCloud Drive/_areas/aaron-work/emacs/org/tasks.org" "Emacs")
                  "* TODO %?")
-                ("m" "Masa Todo" entry
-                 (file+headline "~/pCloud Drive/_areas/aaron-work/emacs/tasks.org" "Masa")
-                 "* TODO %? %^{PRIORITY}p")
                 ("w" "Writing Idea" entry
-                 (file "~/pCloud Drive/_areas/aaron-work/emacs/writing.org")
+                 (file "~/pCloud Drive/_areas/aaron-work/emacs/org/writing.org")
                  "* %? %^g")
                 ("b" "Book" entry
-                 (file "~/pCloud Drive/_areas/aaron-work/emacs/books.org"))))
+                 (file "~/pCloud Drive/_areas/aaron-work/emacs/org/books.org"))))
         (org-babel-do-load-languages
          'org-babel-load-languages
          '((python . t)
@@ -526,7 +523,7 @@
     :init
     (setq org-roam-v2-ack t)
     :custom
-    (org-roam-directory "~/Documents/RoamNotes")
+    (org-roam-directory "~/pCloud Drive/_areas/aaron-work/emacs/daily-notes")
     (org-roam-completion-everywhere t)
     :bind (("C-c n l" . org-roam-buffer-toggle)
            ("C-c n f" . org-roam-node-find)
@@ -562,13 +559,14 @@
       (unless (string-match-p ".org_archive$" (buffer-file-name))
         (org-map-entries
          (lambda ()
-           (if (string-match-p daily-note-pattern (buffer-file-name))
+           ;; (if (string-match-p daily-note-pattern (buffer-file-name))
                ;; for daily notes, move to a "Archive" subtree in the same file
                (progn
                  (funcall 'org-todo "")
                  (funcall 'org-archive-to-archive-sibling))
              ;; for other files, archive to a separate file
-             (org-archive-subtree))
+             ;; (org-archive-subtree)
+             ;; )
            (setq org-map-continue-from (outline-previous-heading)))
          "/+DONE" 'file)
         (save-buffer))))

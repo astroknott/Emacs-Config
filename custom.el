@@ -56,7 +56,7 @@
  '(objed-cursor-color "#ff5555")
  '(org-agenda-clockreport-parameter-plist '(:link t :maxlevel 4 :tstart t :tend t))
  '(org-agenda-files
-   '("~/pCloud Drive/_areas/aaron-work/emacs/project-notes/rge.org" "/Users/aaron/Documents/RoamNotes/daily/2024-04-24.org" "/Users/aaron/pCloud Drive/_areas/aaron-work/emacs/project-notes/seniornicity.org"))
+   '("~/Documents/RoamNotes/daily/2024-05-03.org" "/Users/aaron/pCloud Drive/_areas/aaron-work/emacs/project-notes/trademarkia.org" "/Users/aaron/pCloud Drive/_areas/aaron-work/emacs/project-notes/seniornicity.org" "/Users/aaron/pCloud Drive/_areas/aaron-work/emacs/project-notes/rge.org" "/Users/aaron/Documents/RoamNotes/daily/2024-04-24.org"))
  '(org-agenda-loop-over-headlines-in-active-region nil)
  '(org-agenda-start-with-clockreport-mode t)
  '(org-clock-clocktable-default-properties '(:maxlevel 3))
