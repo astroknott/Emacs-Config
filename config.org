@@ -481,7 +481,7 @@
       :hook (text-mode . turn-on-visual-line-mode)
       :general
       (ak/main-leader-key
-        "ca" 'org-agenda-list)
+        "ca" 'org-agenda-list :wk "Agenda Week View")
       (org-mode-map
        "M-p" 'org-previous-visible-heading
        "M-n" 'org-next-visible-heading)
