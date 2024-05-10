@@ -477,45 +477,59 @@
 * Org Mode
 ** Org Setup
 #+BEGIN_SRC emacs-lisp
-  (use-package org
-    :hook (text-mode . turn-on-visual-line-mode)
-    :general
-    (org-mode-map
-     "M-p" 'org-previous-visible-heading
-     "M-n" 'org-next-visible-heading)
-    (global
-     "M-c" 'org-capture
-     "C-c a" 'org-agenda)
-    :config
-    (setq org-refile-use-outline-path 'file
-          org-outline-path-complete-in-steps t
-          org-log-done t
-          org-agenda-files '("~/pCloud Drive/_areas/aaron-work/emacs/project-notes" "~/pCloud Drive/_areas/aaron-work/emacs/project-notes/archive" "~/pCloud Drive/_areas/aaron-work/emacs/daily" "~/Documents/RoamNotes/daily")
-          org-archive-location "archive/%s_archive::datetree/"
-          org-capture-templates
-          '(("e" "Emacs Todo" entry
-             (file+headline "~/pCloud Drive/_areas/aaron-work/emacs/org/tasks.org" "Emacs")
-             "* TODO %?")
-            ("w" "Writing Idea" entry
-             (file "~/pCloud Drive/_areas/aaron-work/emacs/org/writing.org")
-             "* %? %^g")
-            ("b" "Book" entry
-             (file "~/pCloud Drive/_areas/aaron-work/emacs/org/books.org"))))
-    (setq org-agenda-clockreport-parameter-plist '(:stepskip0 t :link t :maxlevel 2 :fileskip0 t))
-    (org-babel-do-load-languages
-     'org-babel-load-languages
-     '((python . t)
-       (emacs-lisp . t)))
-    (setq org-goto-interface 'outline-path-completion)
-    (setq org-outline-path-complete-in-steps nil))
+    (use-package org
+      :hook (text-mode . turn-on-visual-line-mode)
+      :general
+      (ak/main-leader-key
+        "ca" 'org-agenda-list)
+      (org-mode-map
+       "M-p" 'org-previous-visible-heading
+       "M-n" 'org-next-visible-heading)
+      (global
+       "M-c" 'org-capture
+       "C-c a" 'org-agenda)
+      :config
+      (setq org-refile-use-outline-path 'file
+            org-outline-path-complete-in-steps t
+            org-log-done t
+            org-agenda-files '("~/pCloud Drive/_areas/aaron-work/emacs/daily")
+            org-archive-location "archive/%s_archive::datetree/"
+            org-capture-templates
+            '(("e" "Emacs Todo" entry
+               (file+headline "~/pCloud Drive/_areas/aaron-work/emacs/org/tasks.org" "Emacs")
+               "* TODO %?")
+              ("w" "Writing Idea" entry
+               (file "~/pCloud Drive/_areas/aaron-work/emacs/org/writing.org")
+               "* %? %^g")
+              ("b" "Book" entry
+               (file "~/pCloud Drive/_areas/aaron-work/emacs/org/books.org"))))
+      (setq org-agenda-clockreport-parameter-plist '(:stepskip0 t :link t :maxlevel 3 :fileskip0 t))
+      (setq org-duration-format 'h:mm)
+      (setq org-clock-total-time-cell-format "%s")
+      (org-babel-do-load-languages
+       'org-babel-load-languages
+       '((python . t)
+         (emacs-lisp . t)))
+      (setq org-goto-interface 'outline-path-completion)
+      (setq org-outline-path-complete-in-steps nil))
 
-  (use-package org-superstar
-    :after org
-    :hook (org-mode . org-superstar-mode))
+    (use-package org-superstar
+      :after org
+      :hook (org-mode . org-superstar-mode))
 
-  (use-package org-autolist
-    :after org
-    :hook (org-mode . org-autolist-mode))
+    (use-package org-autolist
+      :after org
+      :hook (org-mode . org-autolist-mode))
+
+    ;; refresh agenda files
+    ;; this is so when the daily notes are added org-agenda needs a refresh to pick up that file
+  (defun ak/refresh-org-agenda-files ()
+     "Refresh org-agenda-files."
+     (interactive)
+     (add-to-list 'org-agenda-files "~/pCloud Drive/_areas/aaron-work/emacs/daily"))
+
+    (ak/main-leader-key
+      "cz" '(ak/refresh-org-agenda-files :wk "Refresh Agenda Files"))
 
 #+END_SRC
 ** Daily Notes - Roam Setup
