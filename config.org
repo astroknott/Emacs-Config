@@ -529,7 +529,8 @@
      (add-to-list 'org-agenda-files "~/pCloud Drive/_areas/aaron-work/emacs/daily"))
 
     (ak/main-leader-key
-      "cz" '(ak/refresh-org-agenda-files :wk "Refresh Agenda Files"))
+      "cz" '(ak/refresh-org-agenda-files :wk "Refresh Agenda Files")
+      "cg" '(org-clock-goto :wk "Go to Current Clock"))
 
 #+END_SRC
 ** Daily Notes - Roam Setup
