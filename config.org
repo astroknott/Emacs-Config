@@ -37,7 +37,9 @@
   - [[#auto-archiving][Auto Archiving]]
   - [[#insert-elisp-structure-template][Insert elisp Structure Template]]
   - [[#enabling-table-of-contents][Enabling Table of Contents]]
+  - [[#links][Links]]
 - [[#dired][Dired]]
+- [[#ediff][EDiff]]
 - [[#the-rest][The Rest]]
 - [[#custom-functions][Custom Functions]]
   - [[#utilities][Utilities]]
@@ -143,7 +145,7 @@
 
   (ak/generate-jump-functions
    "~/pCloud Drive/_areas/aaron-work/emacs/project-notes"
-   '("passelz" "goclub.org" "seniornicity.org" "home-server"))
+   '("passelz.org" "goclub.org" "seniornicity.org" "home-server.org"))
 
   (ak/generate-jump-functions
    "~/vanilla-emacs/config"
@@ -160,6 +162,7 @@
     "M-o h" '(ak/jump-to-home :wk "Home")
     "M-o p" '(:ignore t :wk "Projects")
     "M-o ph" '(ak/jump-to-home-server :wk "Home Server")
+    "M-o pp" '(ak/jump-to-passelz :wk "Passelz")
     "M-o ps" '(ak/jump-to-seniornicity :wk "Seniornicity")
     "M-o pg" '(ak/jump-to-goclub :wk "Go Club"))
 #+END_SRC
@@ -633,6 +636,14 @@
     :init (add-hook 'org-mode-hook 'toc-org-enable))
 #+END_SRC
 
+** Links
+#+BEGIN_SRC emacs-lisp
+  (ak/main-leader-key
+    "c l" '(org-store-link :wk "Store Link")
+    "c C-l" '(org-insert-link :wk "Insert Link"))
+
+#+END_SRC
+
 * Dired
 #+BEGIN_SRC emacs-lisp
   (use-package dired
@@ -649,6 +660,15 @@
     :hook (dired-mode . dired-omit-mode)
     :config
     (setq dired-omit-files "^.*~\\|^#.*#$"))
+#+END_SRC
+
+* EDiff
+#+BEGIN_SRC emacs-lisp
+  (use-package ediff
+    :ensure nil
+    :config
+    (setq ediff-split-window-function 'split-window-horizontally)
+    (setq ediff-window-setup-function 'ediff-setup-windows-plain))
 #+END_SRC
 
 * The Rest  
@@ -686,7 +706,7 @@
      (setq company-backends '((company-capf company-tide company-files company-yasnippet company-keywords)))
      (setq company-show-quick-access 'right)
      (setq company-tooltip-align-annotations t)
-     (company-minimum-prefix-length 1)
+     (company-minimum-prefix-length 3)
      (company-idle-delay 0.0))
 
    (global-company-mode 1)
