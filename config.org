@@ -144,8 +144,16 @@
    '("writing.org" "notes.org" "tasks.org" "docs.org" "home.org" "books.org"))
 
   (ak/generate-jump-functions
-   "~/pCloud Drive/_areas/aaron-work/emacs/project-notes"
-   '("passelz.org" "goclub.org" "seniornicity.org" "home-server.org"))
+   "~/pCloud Drive/_areas/aaron-work/emacs/project-notes/"
+   '("home-server.org" "go-club.org"))
+
+  (ak/generate-jump-functions
+   "~/pCloud Drive/_areas/aaron-work/emacs/project-notes/seniornicity"
+   '("seniornicity-tasks.org" "seniornicity.org"))
+
+  (ak/generate-jump-functions
+   "~/pCloud Drive/_areas/aaron-work/emacs/project-notes/passelz"
+   '("passelz-tasks.org" "passelz.org"))
 
   (ak/generate-jump-functions
    "~/vanilla-emacs/config"
@@ -162,8 +170,12 @@
     "M-o h" '(ak/jump-to-home :wk "Home")
     "M-o p" '(:ignore t :wk "Projects")
     "M-o ph" '(ak/jump-to-home-server :wk "Home Server")
-    "M-o pp" '(ak/jump-to-passelz :wk "Passelz")
-    "M-o ps" '(ak/jump-to-seniornicity :wk "Seniornicity")
+    "M-o pp" '(:ignore t :wk "Passelz")
+    "M-o ppn" '(ak/jump-to-passelz :wk "Passelz Notes")
+    "M-o ppt" '(ak/jump-to-passelz-tasks :wk "Passelz Tasks")
+    "M-o ps" '(:ignore t :wk "Seniornicity")
+    "M-o psn" '(ak/jump-to-seniornicity :wk "Seniornicity Notes")
+    "M-o pst" '(ak/jump-to-seniornicity-tasks :wk "Seniornicity Tasks")
     "M-o pg" '(ak/jump-to-goclub :wk "Go Club"))
 #+END_SRC
 
@@ -301,6 +313,7 @@
       "v" '(:ignore t :wk "Avy")
       "vl" '(avy-goto-line :wk "Go to Line")
       "vm" '(avy-move-region :wk "Move Region")
+      "v'" '(avy-copy-region :wk "Copy Region to Point")
       "vc" '(avy-kill-ring-save-region :wk "Copy Region to kill ring")
       "vk" '(avy-kill-region :wk "Kill Region")))
 
@@ -443,39 +456,10 @@
 #+BEGIN_SRC emacs-lisp
   (use-package magit)
 
-  (use-package forge
-    :after magit)
-
   (use-package orgit
     :after magit)
-
-  (use-package orgit-forge
-    :after (magit forge orgit))
-
-  (with-eval-after-load 'magit
-    (fset 'forge--list-notifications-all
-          (symbol-function 'forge--list-notifications-unread)))
-
-#+END_SRC
-*** General Bindings - Magit
-#+BEGIN_SRC emacs-lisp
-
-  ;; on notifications view, change the specific visit pullreq command to the more general visit topic command, so that it can visit issues as well
-  (ak/main-leader-key
-    :keymaps 'magit-mode-map
-    "F" '(:ignore t :wk "Forge")
-    "Fm" '(forge-merge :wk "Merge PR")
-    :keymaps 'forge-pullreq-section-map
-    "Ft" '(forge-visit-topic :wk "Visit Topic")
-    "Fi" '(forge-visit-issue :wk "Visit Issue")
-    "Fp" '(forge-visit-pullreq :wk "Visit Pull Request"))
-
-  (general-define-key
-   :keymaps 'forge-notifications-mode-map 
-   "RET" 'forge-visit-topic)
 #+END_SRC
 
-#+END_SRC
 * Org Mode
 ** Org Setup
 #+BEGIN_SRC emacs-lisp
@@ -494,10 +478,17 @@
       (setq org-refile-use-outline-path 'file
             org-outline-path-complete-in-steps t
             org-log-done t
-            org-agenda-files '("~/pCloud Drive/_areas/aaron-work/emacs/daily")
-            org-archive-location "archive/%s_archive::datetree/"
+            org-agenda-files '("~/pCloud Drive/_areas/aaron-work/emacs/project-notes/seniornicity/seniornicity-tasks.org" "~/pCloud Drive/_areas/aaron-work/emacs/project-notes/passelz/passelz-tasks.org")
+            org-archive-location "%s_archive::datetree/"
             org-capture-templates
-            '(("e" "Emacs Todo" entry
+            '(
+              ("s" "Seniornicity Todo" entry
+               (file "~/pCloud Drive/_areas/aaron-work/emacs/project-notes/seniornicity/seniornicity-tasks.org")
+             "* TODO %? :seniornicity:")
+              ("p" "Passelz Todo" entry
+               (file "~/pCloud Drive/_areas/aaron-work/emacs/project-notes/passelz-tasks.org")
+             "* TODO %? :passelz:")
+              ("e" "Emacs Todo" entry
                (file+headline "~/pCloud Drive/_areas/aaron-work/emacs/org/tasks.org" "Emacs")
                "* TODO %?")
               ("w" "Writing Idea" entry
@@ -523,16 +514,7 @@
       :after org
       :hook (org-mode . org-autolist-mode))
 
-    ;; refresh agenda files
-    ;; this is so when the daily notes are added org-agenda needs a refresh to pick up that file
-  (defun ak/refresh-org-agenda-files ()
-     "Refresh org-agenda-files."
-     (interactive)
-      (setq org-agenda-clockreport-parameter-plist '(:stepskip0 t :link t :maxlevel 2 :fileskip0 t :filetitle nil :hidefiles t))
-      (setq org-agenda-files '("~/pCloud Drive/_areas/aaron-work/emacs/daily")))
-
     (ak/main-leader-key
-      "cz" '(ak/refresh-org-agenda-files :wk "Refresh Agenda Files")
       "cg" '(org-clock-goto :wk "Go to Current Clock"))
 
 #+END_SRC
@@ -650,7 +632,7 @@
     :ensure nil
     :general
     (:keymaps 'dired-mode-map
-              "F" 'dired-create-empty-file
+              "=" 'dired-create-empty-file
               "M-p" 'dired-up-directory
               "M-n" 'dired-find-file
               ))
